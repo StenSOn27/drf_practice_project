@@ -23,3 +23,6 @@ class Book(models.Model):
     )
     inventory = models.PositiveIntegerField()
     daily_fee = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self) -> str:
+        return self.title
