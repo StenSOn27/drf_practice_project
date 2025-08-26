@@ -1,9 +1,10 @@
 ﻿from rest_framework import serializers
 
-from .models import Book
+from .models import Book, Cover
 
 
 class BookSerializer(serializers.ModelSerializer):
+    cover = serializers.ChoiceField(choices=[(cover.value, cover.value) for cover in Cover])
     class Meta:
         model = Book
         fields = [
@@ -18,6 +19,7 @@ class BookSerializer(serializers.ModelSerializer):
 
 class BookListSerializer(BookSerializer):
     class Meta:
+        model = Book
         fields = ["id", "title"]
 
 
