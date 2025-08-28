@@ -23,3 +23,8 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Borrowing
         fields = ["id", "expected_return_date", "book"]
+
+    def validate_book(self, book):
+        if book.inventory < 1:
+            raise serializers.ValidationError("Book is out of stock")
+        return book
