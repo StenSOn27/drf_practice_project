@@ -1,4 +1,5 @@
-﻿from rest_framework import serializers
+﻿from datetime import date
+from rest_framework import serializers
 from .models import Borrowing
 from books.serializers import BookSerializer
 
@@ -28,6 +29,11 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         if book.inventory < 1:
             raise serializers.ValidationError("Book is out of stock")
         return book
+
+    def validate_expected_return_date(self, value):
+        if value <= date.today():
+            raise serializers.ValidationError("Return date must be in the future")
+        return value
 
     def create(self, validated_data):
         request = self.context["request"]
