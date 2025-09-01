@@ -1,4 +1,6 @@
-﻿from datetime import date
+﻿from dataclasses import field
+from datetime import date, timezone
+import datetime
 from rest_framework import serializers
 from .models import Borrowing
 from books.serializers import BookSerializer
@@ -47,3 +49,18 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
             **validated_data
         )
         return borrowing
+
+
+class BorrowingReturnSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Borrowing
+        fields = []
+
+    def validate(self, attrs):
+        borrowing = self.instance
+
+        if borrowing.actual_return_date is not None:
+            raise serializers.ValidationError("This borrowing has already been returned.")
+
+        return attrs
