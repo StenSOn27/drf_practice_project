@@ -1,7 +1,10 @@
-from rest_framework import viewsets, generics
+import datetime
+from rest_framework import viewsets, generics, status
 from .models import Borrowing
-from .serializers import BorrowingCreateSerializer, BorrowingReadSerializer
+from .serializers import BorrowingCreateSerializer, BorrowingReadSerializer, BorrowingReturnSerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 class BorrowingViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BorrowingReadSerializer
@@ -29,6 +32,36 @@ class BorrowingViewSet(viewsets.ReadOnlyModelViewSet):
                     pass
 
         return queryset
+
+    @action(detail=True, methods=['post'], serializer_class=BorrowingReturnSerializer)
+    def return_book(self, request, pk=None):
+        borrowing = self.get_object()
+        serializer = self.get_serializer(instance=borrowing, data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if borrowing.actual_return_date is not None:
+            return Response(
+                {"error": "Book already returned."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        borrowing.actual_return_date = datetime.datetime.now(datetime.timezone.utc)
+        borrowing.save()
+
+        book = borrowing.book
+        book.inventory += 1
+        book.save()
+
+        return Response(
+            {
+                "message": "Book succesfully returned.",
+                "return_date": borrowing.actual_return_date,
+                "book": book.title,
+                "updated_inventory": book.inventory
+            },
+            status=status.HTTP_200_OK
+        )
+
 
 
 class BorrowingCreateView(generics.CreateAPIView):
