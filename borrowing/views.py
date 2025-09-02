@@ -39,12 +39,6 @@ class BorrowingViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(instance=borrowing, data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        if borrowing.actual_return_date is not None:
-            return Response(
-                {"error": "Book already returned."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         borrowing.actual_return_date = datetime.datetime.now(datetime.timezone.utc)
         borrowing.save()
 
